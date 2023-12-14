@@ -7,7 +7,7 @@ Initial heuristic = 17.000
 b (16.000 | 30.000)b (13.000 | 60.002)b (12.000 | 60.002)b (9.000 | 90.004)b (8.000 | 90.004)b (5.000 | 120.006)b (4.000 | 120.006)b (1.000 | 130.007);;;; Solution Found
 ; States evaluated: 26
 ; Cost: 160.008
-; Time 0.02
+; Time 0.00
 0.000: (goto rob wp0 wp1)  [30.000]
 30.001: (search rob wp1 m11)  [10.000]
 30.002: (goto rob wp1 wp2)  [30.000]
