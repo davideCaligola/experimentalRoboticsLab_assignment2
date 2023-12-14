@@ -12,8 +12,8 @@ TrajectoryPlannerROS:
   acc_lim_theta: 1.0
 
 # Goal Tolerance Parameters
-  yaw_goal_tolerance: 1
-  xy_goal_tolerance: 0.1
+  yaw_goal_tolerance: 3.14
+  xy_goal_tolerance: 0.3
 
 # Forward Simulation Parameters
   sim_time: 2.0
