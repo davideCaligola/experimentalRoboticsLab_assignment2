@@ -1,2 +1,4 @@
 /CMakeLists.txt
-
+/rosbot/pddl/generated_problem.pddl
+/rosbot/pddl/plan.pddl
+/rosbot/pddl/planner_problem.pddl
