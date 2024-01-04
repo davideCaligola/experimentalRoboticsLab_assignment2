@@ -2,18 +2,19 @@
 
 import rospy
 import os
-from rosplan_dispatch_msgs.srv import DispatchService, DispatchServiceRequest
-from rosplan_dispatch_msgs.msg import ActionDispatch, ActionFeedback
 from rosplan_dispatch_msgs.srv import ProblemService, ProblemServiceRequest
 from rosplan_dispatch_msgs.srv import PlanningService, PlanningServiceRequest
 from rosplan_dispatch_msgs.srv import ParsingService, ParsingServiceRequest
-from assignment_2.msg import LogicStates
+from rosplan_dispatch_msgs.srv import DispatchService, DispatchServiceRequest
+from rosplan_dispatch_msgs.msg import ActionDispatch, ActionFeedback
+from rosbot.msg import LogicStates
+# from std_msgs.msg import String
 
 # global variables
 pkg_path = ""
 planner_path = ""
 data_path = ""
-state = LogicStates.PROBLEM_GEN
+state = ""
 
 def action_dispatch_callback(action: ActionDispatch):
     rospy.loginfo("Executing action: %s" % action.name)
@@ -29,11 +30,12 @@ def action_feedback_callback(feedback: ActionFeedback):
 
 
 def start():
-    
+
     global state, pkg_path, planner_path, data_path
 
     rate = rospy.Rate(10)
-    
+    timeout_rosplan_messages = 5    # seconds
+
     while (not rospy.is_shutdown()):
         if state == LogicStates.PROBLEM_GEN:
             rospy.loginfo("robot_logic - generating problem")
@@ -56,13 +58,23 @@ def start():
 
         
         if state == LogicStates.WAITING_PROBLEM:
+
+            # rospy.loginfo("waiting for publishing problem instance...")
+            # rospy.wait_for_message(
+            #     "/rosplan_problem_interface/problem_instance",
+            #     String,
+            #     timeout=timeout_rosplan_messages
+            # )
+            # rospy.loginfo("problem published")
+
             if resp_problem_gen.problem_generated:
+
                 state = LogicStates.PLAN_GEN
             else:
                 rospy.loginfo("Error in generating the problem")
                 state = LogicStates.ERROR
 
-
+        
         if state == LogicStates.PLAN_GEN:
             rospy.loginfo("robot_logic - generating plan")
 
@@ -87,6 +99,14 @@ def start():
 
 
         if state == LogicStates.WAITING_PLAN:
+            # rospy.loginfo("waiting for publishing plan...")
+            # rospy.wait_for_message(
+            #     "/rosplan_planner_interface/planner_output",
+            #     String,
+            #     timeout=timeout_rosplan_messages
+            # )
+            # rospy.loginfo("plan published")
+
             if resp_planner.plan_found:
                 rospy.loginfo("Plan found")
                 state = LogicStates.PLAN_PARSING
@@ -94,9 +114,8 @@ def start():
                 rospy.loginfo("Error in generating the plan")
                 state = LogicStates.ERROR
 
-
+        
         if state == LogicStates.PLAN_PARSING:
-            rospy.loginfo("robot_logic - parsing plan")
             # subscribe to parse service
             parser = rospy.ServiceProxy(
                 "/rosplan_parsing_interface/parse_plan_from_file",
@@ -124,6 +143,7 @@ def start():
 
 
         if state == LogicStates.DISPATCH_ACTION:
+            rospy.loginfo("status: DISPATCH_ACTION")
             rospy.loginfo("robot_logic - dispatching actions")
             # listen to action_dispatch
             action_dispatch_sub = rospy.Subscriber(
@@ -164,7 +184,6 @@ def start():
         if state == LogicStates.EXIT:
             rospy.loginfo("robot_logic - shutting down")
             rospy.signal_shutdown("\nShutting down node on user request...")
-            pass
 
         if state == LogicStates.ERROR:
             rospy.loginfo("error")
@@ -172,12 +191,15 @@ def start():
         rate.sleep()
 
 
+
 def main():
 
     global state, pkg_path, planner_path, data_path
 
     # initialize node
-    rospy.init_node("robot_logic")
+    rospy.init_node("nav_test")
+
+    rospy.loginfo("robot_test node initialized")
 
     # wait for service to generate the problem
     rospy.loginfo("waiting for service /rosplan_problem_interface/problem_generation_server_params...")
@@ -204,16 +226,11 @@ def main():
     planner_path = rospy.get_param("planner_path")
     data_path = rospy.get_param("data_path")
 
-    # starting state for the state machine
     state = LogicStates.PROBLEM_GEN
-    # state = LogicStates.BRAKE
 
-    rospy.loginfo("robot_logic node initialized")
-    
     start()
 
     rospy.spin()
-
 
 if __name__ == "__main__":
     main()

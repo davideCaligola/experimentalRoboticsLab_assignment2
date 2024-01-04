@@ -29,8 +29,8 @@ namespace KCL_rosplan {
 			sprintf(x, "x: %0.1f", std::get<0>(coordinates));
 			sprintf(y, "y: %0.1f", std::get<1>(coordinates));
 			
-			ROS_INFO(x);
-			ROS_INFO(y);
+			// ROS_INFO(x);
+			// ROS_INFO(y);
 
 			// std::string(std::get<0>(coordinate));
 
@@ -41,7 +41,7 @@ namespace KCL_rosplan {
 			
 			// wait for the action server to come up
   			while(!movebase_client.waitForServer(ros::Duration(5.0))){
-  				ROS_INFO("Waiting for the move_base action server to come up");
+  				ROS_INFO("go-home Action - Waiting for the move_base action server to come up");
   			}
 
 			// define goal to reach

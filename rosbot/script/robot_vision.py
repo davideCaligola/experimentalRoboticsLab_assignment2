@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 
@@ -25,7 +25,7 @@ from cv_bridge import CvBridge
 import cv2
 from cv2 import aruco
 from sensor_msgs.msg import Image, CameraInfo
-from assignment_2.msg import RobotVision
+from rosbot.msg import RobotVision
 
 cam_center_x = 0
 cam_center_y = 0

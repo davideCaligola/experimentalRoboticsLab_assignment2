@@ -2,7 +2,7 @@
 #include <regex>
 #include "../include/action_handler.h"
 #include <unistd.h>
-#include "assignment_2/RobotVision.h"
+#include "rosbot/RobotVision.h"
 #include <geometry_msgs/Twist.h>
 
 int cameraId;
@@ -54,7 +54,7 @@ namespace KCL_rosplan {
 		}
 }
 
-void vision_cb(const assignment_2::RobotVision::ConstPtr& msg){
+void vision_cb(const rosbot::RobotVision::ConstPtr& msg){
 	
 	// ROS_INFO("**************** vision_cb ****************");
 	// update id seen by the camera

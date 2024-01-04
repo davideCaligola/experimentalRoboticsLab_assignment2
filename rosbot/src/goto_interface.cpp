@@ -30,7 +30,7 @@ namespace KCL_rosplan {
 			
 			// wait for the action server to come up
   			while(!movebase_client.waitForServer(ros::Duration(5.0))){
-  				ROS_INFO("Waiting for the move_base action server to come up");
+  				ROS_INFO("goto Action - Waiting for the move_base action server to come up");
   			}
 
 			// define goal to reach
