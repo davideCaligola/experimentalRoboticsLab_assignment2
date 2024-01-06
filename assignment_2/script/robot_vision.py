@@ -6,7 +6,7 @@
    :platform unix
    :synopsis: Python module for planning.
    
-.. moduleauthor:: Luca Petruzzello <S5673449@studenti.unige.it>
+.. moduleauthor:: Luca Petruzzello <S5673449@studenti.unige.it> Davide Cattin <S5544178@studenti.unige.it>
 
 This ROS node is used for getting the informations (height and width) regarding the camera (through /camera/color/camera_info topic) and the informations (id, center and corners) regarding the markers (through /camera/color/image_raw topic).
 
