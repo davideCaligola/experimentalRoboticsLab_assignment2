@@ -65,13 +65,6 @@ Setup the current workspace
 source ./devel/setup.bash
 ```
 
-Copy the marker models in the local directory `.gazebo`, otherwise the marker will not be visible in the Gazebo environment.
-
-```bash
-mkdir -p ~/.gazebo
-cp -r ./src/assignment_2/aruco_models/* ~/.gazebo
-```
-
 ## Use
 
 The simulation can be started with the provided launch file:
@@ -86,6 +79,7 @@ An example of simulation run is shown in the following video.
 
 https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/assets/114524396/79079982-d13f-408c-ba0d-72de86266727
 
+The following video shows the robot's behaviour in the real world.
 
 ## Architecture
 
