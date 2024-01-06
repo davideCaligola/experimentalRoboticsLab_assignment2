@@ -87,6 +87,8 @@ An example of simulation run is shown in the following video.
 
 https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/assets/114524396/79079982-d13f-408c-ba0d-72de86266727
 
+The following video shows the robot's behaviour in the real world.
+
 ## Architecture
 
 The package is developed in five nodes:  
