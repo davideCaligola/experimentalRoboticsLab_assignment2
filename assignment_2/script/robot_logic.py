@@ -1,5 +1,24 @@
 #! /usr/bin/env python
 
+"""
+
+.. module: robot_logic
+   :platform unix
+   :synopsis: Python module for calling services regarding rosplan.
+   
+.. moduleauthor:: Luca Petruzzello <S5673449@studenti.unige.it> Davide Cattin <S5544178@studenti.unige.it>
+
+This ROS node is used for calling services regarding rosplan.
+
+Services:
+**/rosplan_problem_interface/problem_generation_server_params**
+**/rosplan_planner_interface/planning_server_params**
+**/rosplan_parsing_interface/parse_plan_from_file**
+**/rosplan_plan_dispatcher/dispatch_plan**
+  
+
+"""
+
 import rospy
 import os
 from rosplan_dispatch_msgs.srv import DispatchService, DispatchServiceRequest
@@ -16,10 +35,30 @@ data_path = ""
 state = LogicStates.PROBLEM_GEN
 
 def action_dispatch_callback(action: ActionDispatch):
+    """
+    
+    Function for printing the action.
+    
+    Args: ActionDispatch (Action): information on the action
+    	
+    Returns: None
+    
+    """
+    
     rospy.loginfo("Executing action: %s" % action.name)
 
 
 def action_feedback_callback(feedback: ActionFeedback):
+    """
+    
+    Function for printing if the action has been completed.
+    
+    Args: ActionFeedback (Action): feedback of the action
+    	
+    Returns: None
+    
+    """
+    
     if (feedback.status == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE):
         msg = "Action completed successfully"
         rospy.loginfo(msg)
@@ -29,6 +68,15 @@ def action_feedback_callback(feedback: ActionFeedback):
 
 
 def start():
+    """
+    
+    Function for calling all the needed services.
+    
+    Args: None
+    	
+    Returns: None
+    
+    """
     
     global state, pkg_path, planner_path, data_path
 
