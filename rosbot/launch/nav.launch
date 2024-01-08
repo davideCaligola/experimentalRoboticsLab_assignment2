@@ -10,9 +10,8 @@
     <include file="$(find rosbot)/launch/gmapping.launch"></include>
     <include file="$(find rosbot)/launch/move_base.launch"></include>
     
-    <node name="nav_test" pkg="rosbot" type="nav_test.py" output="screen"
-    required="true"/>
+    <node name="robot_logic" pkg="rosbot" type="robot_logic.py" output="screen"
+        launch-prefix="xterm -e" required="true" />
     <node name="robot_vision" pkg="rosbot" type="robot_vision.py" output="screen"/>
     
-
 </launch>

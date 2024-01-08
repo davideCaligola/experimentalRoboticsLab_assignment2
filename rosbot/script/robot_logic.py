@@ -1,5 +1,24 @@
 #! /usr/bin/env python
 
+"""
+
+.. module: robot_logic
+   :platform unix
+   :synopsis: Python module for calling services regarding rosplan.
+   
+.. moduleauthor:: Luca Petruzzello <S5673449@studenti.unige.it> Davide Cattin <S5544178@studenti.unige.it>
+
+This ROS node is used for calling services regarding rosplan.
+
+Services:
+**/rosplan_problem_interface/problem_generation_server_params**
+**/rosplan_planner_interface/planning_server_params**
+**/rosplan_parsing_interface/parse_plan_from_file**
+**/rosplan_plan_dispatcher/dispatch_plan**
+  
+
+"""
+
 import rospy
 import os
 from rosplan_dispatch_msgs.srv import ProblemService, ProblemServiceRequest
@@ -8,7 +27,6 @@ from rosplan_dispatch_msgs.srv import ParsingService, ParsingServiceRequest
 from rosplan_dispatch_msgs.srv import DispatchService, DispatchServiceRequest
 from rosplan_dispatch_msgs.msg import ActionDispatch, ActionFeedback
 from rosbot.msg import LogicStates
-# from std_msgs.msg import String
 
 # global variables
 pkg_path = ""
@@ -17,10 +35,28 @@ data_path = ""
 state = ""
 
 def action_dispatch_callback(action: ActionDispatch):
+    """
+    
+    Function for printing the executing action.
+    
+    Args: action (ActionDispatch): information on the action
+    	
+    Returns: None
+    
+    """
     rospy.loginfo("Executing action: %s" % action.name)
 
 
 def action_feedback_callback(feedback: ActionFeedback):
+    """
+    
+    Function for printing if the action has been completed.
+    
+    Args: feedback (ActionFeedback): feedback of the action
+    	
+    Returns: None
+    
+    """
     if (feedback.status == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE):
         msg = "Action completed successfully"
         rospy.loginfo(msg)
@@ -30,11 +66,19 @@ def action_feedback_callback(feedback: ActionFeedback):
 
 
 def start():
+    """
+    
+    Function for calling all the needed services.
+    
+    Args: None
+    	
+    Returns: None
+    
+    """
 
     global state, pkg_path, planner_path, data_path
 
-    rate = rospy.Rate(10)
-    timeout_rosplan_messages = 5    # seconds
+    rate = rospy.Rate(10)   # [Hz]
 
     while (not rospy.is_shutdown()):
         if state == LogicStates.PROBLEM_GEN:
@@ -58,14 +102,6 @@ def start():
 
         
         if state == LogicStates.WAITING_PROBLEM:
-
-            # rospy.loginfo("waiting for publishing problem instance...")
-            # rospy.wait_for_message(
-            #     "/rosplan_problem_interface/problem_instance",
-            #     String,
-            #     timeout=timeout_rosplan_messages
-            # )
-            # rospy.loginfo("problem published")
 
             if resp_problem_gen.problem_generated:
 
@@ -99,14 +135,6 @@ def start():
 
 
         if state == LogicStates.WAITING_PLAN:
-            # rospy.loginfo("waiting for publishing plan...")
-            # rospy.wait_for_message(
-            #     "/rosplan_planner_interface/planner_output",
-            #     String,
-            #     timeout=timeout_rosplan_messages
-            # )
-            # rospy.loginfo("plan published")
-
             if resp_planner.plan_found:
                 rospy.loginfo("Plan found")
                 state = LogicStates.PLAN_PARSING
@@ -181,9 +209,11 @@ def start():
                 rospy.loginfo("Error while dispatching the plan actions")
                 state = LogicStates.ERROR
 
+
         if state == LogicStates.EXIT:
             rospy.loginfo("robot_logic - shutting down")
             rospy.signal_shutdown("\nShutting down node on user request...")
+
 
         if state == LogicStates.ERROR:
             rospy.loginfo("error")
@@ -191,15 +221,27 @@ def start():
         rate.sleep()
 
 
-
 def main():
+    """
+    
+    Function for
+    - initialize the node,
+    - waiting all the needed services are available,
+    - defining paths for ROSPlan
+    - start the state machine for generating and executing the plan
+    
+    Args: None
+    	
+    Returns: None
+    
+    """
 
     global state, pkg_path, planner_path, data_path
 
     # initialize node
-    rospy.init_node("nav_test")
+    rospy.init_node("robot_logic")
 
-    rospy.loginfo("robot_test node initialized")
+    rospy.loginfo("robot_logic node initialized")
 
     # wait for service to generate the problem
     rospy.loginfo("waiting for service /rosplan_problem_interface/problem_generation_server_params...")
@@ -231,6 +273,7 @@ def main():
     start()
 
     rospy.spin()
+
 
 if __name__ == "__main__":
     main()

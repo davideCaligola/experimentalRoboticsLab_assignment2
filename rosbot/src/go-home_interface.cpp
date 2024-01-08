@@ -1,3 +1,8 @@
+/**
+go-home_interface.cpp node
+Implements the method concreateCallback that is called by ROSPlan to execute the related action
+**/
+
 #include "../include/action_handler.h"
 #include <unistd.h>
 #include <actionlib/client/simple_action_client.h>
@@ -11,32 +16,28 @@
 namespace KCL_rosplan {
 	ActionInterfaceExtended::ActionInterfaceExtended(ros::NodeHandle &nh) {}
 	
+	/*
+		Implements the action go-home called by ROSPlan
+		
+		args: msg (const rosplan_dispatch_msgs::ActionDispatch::ConstPtr&) action argument
+
+		returns: bool once finished return true. It is not dependent from the action result.
+	*/
 	bool ActionInterfaceExtended::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 			
-			ROS_INFO("******************* go-home concreteCallback *******************************");
+			ROS_INFO("go-home concreteCallback");
 
 			std::unordered_map<std::string, std::tuple<float,float>> markerPositions = {
 				{"wp0", std::make_tuple(0.0, 1.0)},
-				{"wp1", std::make_tuple(5.5, 2.5)},	// original (6.0,2.0)
-				{"wp2", std::make_tuple(7.0, -5.0)},
-				{"wp3", std::make_tuple(-3.0, -8.0)},
-				{"wp4", std::make_tuple(-7.0, 1.0)} // original (-7.0, -1.5) it is behind, cannot see the marker
+				{"wp1", std::make_tuple(0.8, 0.0)},	// original (6.0,2.0)
+				{"wp2", std::make_tuple(1.5, 0.0)},
+				{"wp3", std::make_tuple(2, 0.0)},
+				{"wp4", std::make_tuple(3.0, -1.0)} // original (-7.0, -1.5) it is behind, cannot see the marker
 			};
 			
 			std::tuple<float,float> coordinates = markerPositions.at(msg->parameters[2].value);
-			
-			char x[8], y[8];
-			sprintf(x, "x: %0.1f", std::get<0>(coordinates));
-			sprintf(y, "y: %0.1f", std::get<1>(coordinates));
-			
-			// ROS_INFO(x);
-			// ROS_INFO(y);
 
-			// std::string(std::get<0>(coordinate));
-
-			// ROS_INFO( std::string(std::get<0>(markerPositions.at("wp1"))).c_str());
-
-			//inizializzare client to movebase
+			// create client to movebase
 			actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> movebase_client("move_base", true);
 			
 			// wait for the action server to come up
@@ -52,14 +53,13 @@ namespace KCL_rosplan {
 			goal.target_pose.pose.position.y = std::get<1>(coordinates);
 			goal.target_pose.pose.orientation.w = 1.0;
 
-			ROS_INFO("**************************** robot_move sending goal ****************************");
+			// send the goal to service
 			movebase_client.sendGoal(goal);
 
-			ROS_INFO("**************************** waiting for result ****************************");
 			// wait for the action result
 			movebase_client.waitForResult();
-			ROS_INFO("**************************** result done ****************************");
-
+			
+			// check the action result
 			if (movebase_client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
 				ROS_INFO("robot reached target position");
 			else
@@ -73,12 +73,15 @@ namespace KCL_rosplan {
 
 
 int main(int argc, char **argv) {
+	/*
+		main function to:
+		- initialize the node
+		- extend the interface for ROSPlan to execute the action go-home
+	*/
 	
 	ros::init(argc, argv, "gohome_interface", ros::init_options::AnonymousName);
 	
 	ros::NodeHandle nh("~");
-	
-	// MoveBase_client movebase_client("move_base");
 	
 	KCL_rosplan::ActionInterfaceExtended my_aci(nh);
 

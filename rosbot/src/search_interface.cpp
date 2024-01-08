@@ -1,3 +1,8 @@
+/**
+search_interface.cpp node
+Implements the method concreateCallback that is called by ROSPlan to execute the related action
+**/
+
 #include "ros/ros.h"
 #include <regex>
 #include "../include/action_handler.h"
@@ -10,17 +15,19 @@ ros::Publisher cmdVel_pub;
 
 namespace KCL_rosplan {
 	ActionInterfaceExtended::ActionInterfaceExtended(ros::NodeHandle &nh) {}
-	
+
+	/*
+		Implements the action search called by ROSPlan
+		
+		args: msg (const rosplan_dispatch_msgs::ActionDispatch::ConstPtr&) action argument
+
+		returns: bool once finished return true. It is not dependent from the action result.
+	*/
 	bool ActionInterfaceExtended::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 			
-			ROS_INFO("*********************** search concreteCallback ***********************");
-			// // camera info subscriber
-			// ros::Subscriber robotVision_sub = nh.subscribe("info_vision", 100, vision_cb);
+			ROS_INFO("search concreteCallback");
 
-			// // publisher robot command
-			// ros::Publisher cmdVel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel",10);
-
-			// extract number form string
+			// extract number from string
 			std::regex rx("[0-9]+");
 			std::smatch m;
 			std::string str(msg->parameters[2].value);
@@ -31,6 +38,7 @@ namespace KCL_rosplan {
 			geometry_msgs::Twist cmd_vel;
 			cmd_vel.angular.z = 0.5;
 
+			// look for target marker id
 			while (targetId != cameraId)
 			{
 				ROS_INFO("targetId: %d - cameraId: %d", targetId, cameraId);
@@ -46,24 +54,35 @@ namespace KCL_rosplan {
 			// reset cameraId for new search
 			cameraId = 0;
 
-			// // unsubscribe from camera vision
-			// robotVision_sub.shutdown();
-
 			ROS_INFO("Marker %d found. Action (%s) performed: completed!", targetId, msg->name.c_str());
+			
 			return true;
 		}
 }
 
 void vision_cb(const rosbot::RobotVision::ConstPtr& msg){
-	
-	// ROS_INFO("**************** vision_cb ****************");
+	/*
+	Callback function listening to the topic /info_vision and updating the
+	marker id seen by the camera
+
+	args: msg (const rosbot::RobotVision::ConstPtr&) message from topic /info_vision
+
+	returns: void
+	*/
+
 	// update id seen by the camera
 	cameraId = msg->id;
-	// ROS_INFO("vision_cb - cameraId: %d", cameraId);
 }
 
 
 int main(int argc, char **argv) {
+	/*
+		main function to:
+		- initializes the node
+		- defines subscriber to /info_vision topic
+		- defines publisher to /cmd_vel
+		- extends the interface for ROSPlan to execute the action go-home
+	*/
 	
 	ros::init(argc, argv, "search_interface", ros::init_options::AnonymousName);
 	
@@ -71,7 +90,7 @@ int main(int argc, char **argv) {
 	
 	ros::Subscriber robotVision_sub = nh.subscribe("info_vision", 100, vision_cb);
 	
-	// inizializzare client al rotation server
+	// publisher for topic /cmd_vel to drive the rosbot
 	cmdVel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel",10);
 	
 	KCL_rosplan::ActionInterfaceExtended my_aci(nh);
