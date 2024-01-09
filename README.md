@@ -8,19 +8,19 @@ The robot is a [Husarion ROSbot 2R](https://husarion.com/#robots). The `ROSPlan`
 The requirements for the assignment are the following:
 
 - A mobile robot endowed with a camera must find all marker in a given environment and go back to the initial position.
-- The positions of the marker are the following:
-  - marker 11 is visible from the position x = 6.0, y = 2.0
-  - marker 12 is visible from the position x = 7.0, y = -5.0
-  - marker 13 is visible from the position x = -3.0, y = -8.0
-  - marker 15 is visible from the position x = -7.0, y =-1.5
+- The positions of the marker are given for the simulated environment. For the real environment they have been defined considering the available space in the laboratory:
+  - marker 11 is visible from the position x = 0.8, y = 0.0
+  - marker 12 is visible from the position x = 1.5, y = 0.0
+  - marker 13 is visible from the position x = 2.0, y = 0.0
+  - marker 15 is visible from the position x = -3.0, y =-1.0
 - The framework `ROSPlan` must be used to plan the actions of the robot
 - The assignment must be implemented both in simulation (the world file assignment2.world is given) and with the real robot.
 
 The requirements have been fulfilled as follows:
 
-- this branch ([main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2))  
+- branch [main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2)  
   implements the code for the simulation of the real rosbot. The architecture is based on a node implementing the logic for generating the plan using the `ROSPlan` framework, a node implementing the vision data handling using the `aruco` package, and three nodes which implement the actions used to execute the plan.
-- branch [rosbot](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/tree/rosbot)  
+- this branch ([rosbot](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/tree/rosbot))  
   adapts the code in branch [main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2) into the code used to drive the real rosbot to perform the given tasks.
 
 ## Installation
@@ -33,7 +33,7 @@ Requirements:
 - a proper Github SSH key setup (see [Adding a new SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) for more information about it)
 
 The software has been tested in a machine with Linux Ubuntu 20.04 LTS.  
-The package `assignment_2` makes use of the terminal [xterm](https://invisible-island.net/xterm/) to provide information via a separated console.  
+The package `rosbot` makes use of the terminal [xterm](https://invisible-island.net/xterm/) to provide information via a separated console.  
 In Ubuntu, it is possible to install it using the apt command:  
 
 ```shell
@@ -49,7 +49,7 @@ mkdir test_ws
 Clone the repository in the test_ws/src folder:
 
 ```bash
-git clone git@github.com:davideCaligola/experimentalRoboticsLab_assignment2.git test_ws/src
+git clone git@github.com:davideCaligola/experimentalRoboticsLab_assignment2.git --branch rosbot --single-branch test_ws/src
 ```
 
 Navigate into the workspace folder and build the packages
@@ -66,20 +66,50 @@ source ./devel/setup.bash
 ```
 
 ## Use
+The ROS core and the driver to publish the laser and camera outputs are running on the rosbot, while all nodes to generate and execute the plan and to create the map is running on a remote laptop.
+For this reason the following environment variable needs to be specify:
 
-The simulation can be started with the provided launch file:
+- on the rosbot:  
+  
+  ```bash
+  ROS_MASTER_UIR=http://<rosbot ip address>:11311
+  ROS_IP=<rosbot ip address>
+  ```
+- on the remote laptop:  
+  
+  ```bash
+  ROS_MASTER_URI=http://<rosbot ip address>:11311
+  ROS_IP=<remote laptop ip address>
+  ```
+
+In the rosbot, launch the driver :  
 
 ```bash
-roslaunch assignment_2 nav.launch
+roslaunch tutorial_pkg all.launch
 ```
-  
+
+In the remote laptop, launch the package to accomplish the second assignment task:  
+
+```bash
+roslaunch rosbot nav.launch
+```
+
 The rosbot will drive toward the first marker position. Once reached, it will turn looking for the marker. Once the marker is found, the rosbot will move toward the next marker.  
 Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
 An example of simulation run is shown in the following video.
 
-https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/assets/114524396/79079982-d13f-408c-ba0d-72de86266727
+[video to be done]
 
 The following video shows the robot's behaviour in the real world.
+
+## Difference between simulation and real rosbot
+
+The code used to accomplish the second assignment on the real rosbot differs from the one running in the simulation. The main differences are the followings:
+- removing all packages related to Gazebo, RViz and rosbot description,
+- waypoint coordinates changed to accommodate the available space in the laboratory,
+- reduced move_base maximum and minimum speed. Due to the lag in the communication between ROS master and the remote laptop, to reduce the risk of unavoidable instabilities, the speed of the rosbot has been decreased,
+- the topic /camera/color/image_raw has been changed to /camera/rgb/image_raw,
+- the topic /camera/color/camera_info has been changed to /camera/rgb/camera_info
 
 ## Architecture
 
@@ -91,9 +121,9 @@ The package is developed in five nodes:
 - [goto_interface.cpp](#goto_interfacecpp-source)
 - [search_interface.cpp](#search_interfacecpp-source)
 
-The following sections decribes in more details each developed node.
+The following sections describes in more details each developed node.
 
-### robot_logic.py ([source](./assignment_2/script/robot_logic.py))
+### robot_logic.py ([source](./rosbot/script/robot_logic.py))
 It interfaces with the `ROSPlan` framework to drive the rosbot to accomplish the task:
 
 - generates the problem,
@@ -105,12 +135,12 @@ It implements a simple state machine to send the requests  to the `ROSPlan` serv
 <img src="./assets/robot_logic_stateMachine.png" alt="robot_logic.py state machine">  
 *`robot_logic.py` node state machine*
 
-### robot_vision.py ([source](./assignment_2/script/robot_vision.py))
+### robot_vision.py ([source](./rosbot/script/robot_vision.py))
 It subscribes to the following camera topics:
 
-- `/camera/color/camera_info`  
+- `/camera/rgb/camera_info`  
     to calculate the position of the camera center  
-- `/camera/color/image_raw`  
+- `/camera/rbg/image_raw`  
     to extract information about the marker in view  
 
 It publishes the topic `/info_vision`, which provides data about the current seen marker id and the four corners of the marker.
@@ -127,16 +157,16 @@ float32[] marker_bottom_right
 
 *`/info_vision` topic*
 
-### goto_interface.cpp ([source](./assignment_2/src/goto_interface.cpp))
-It implements the `goto` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
+### goto_interface.cpp ([source](./rosbot/src/goto_interface.cpp))
+It implements the `goto` action defined in the `domain`([source](./rosbot/pddl/domain.pddl)).  
 It receives the destination waypoint to reach from the dispatcher and sends the goal to the `move_base` package which drives the rosbot toward the target waypoint.
 
-### go-home_interface.cpp ([source](./assignment_2/src/go-home_interface.cpp))
-It implements the `go-home` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
+### go-home_interface.cpp ([source](./rosbot/src/go-home_interface.cpp))
+It implements the `go-home` action defined in the `domain`([source](./rosbot/pddl/domain.pddl)).  
 It receives the destination waypoint to reach from the dispatcher and sends the goal to the `move_base` package which drives the rosbot toward the target waypoint.
 
-### search_interface.cpp ([source](./assignment_2/src/search_interface.cpp))
-it implements the `search` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
+### search_interface.cpp ([source](./rosbot/src/search_interface.cpp))
+it implements the `search` action defined in the `domain`([source](./rosbot/pddl/domain.pddl)).  
 
 - It subscribes to the topic `/info_vision` to receive information about the current marker id seen by the camera.
 - It receives from the dispatcher the marker id to look for.
@@ -150,4 +180,5 @@ The package can be improved considering the following points:
 - the vision system handles only one marker per time. If more than a marker is in the camera view, only the first one in the list provided by the camera is considered,
 - if the camera does not find the searched marker id, the rosbot keeps on turning on itself looking for the marker id indefinitely. It could be implemented a timeout or any other exception handler,
 - once the rosbot reaches the target point, it takes time to get the notification from the `move_base` package that the service goal has been achieved. It could be possible to speed up the process introducing a check on the position of the robot and once reached the target position within a threshold, cancel the `move_base` service goal,
+- currently, the waypoint coordinates are hardcoded in `goto_interface.cpp` and `go-home_interface`. It would be more comfortable to be able to set the list of waypoints once and from launch file, avoiding the need to compile the code every time one or more coordinate is modified.
 - currently, once the rosbot comes back to the starting point, the `robot_logic.py` node terminates. Since the node is required, its termination triggers all other processes to terminate as well. A more graceful shut down procedure could be devised.
