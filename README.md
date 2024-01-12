@@ -96,9 +96,8 @@ roslaunch rosbot nav.launch
 
 The rosbot will drive toward the first marker position. Once reached, it will turn looking for the marker. Once the marker is found, the rosbot will move toward the next marker.  
 Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
-An example of simulation run is shown in the following video.
 
-[video to be done]
+https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/assets/114524396/2fbfd35a-2d4d-4738-8d49-d9d0ccf3f70f
 
 The following video shows the robot's behaviour in the real world.
 
