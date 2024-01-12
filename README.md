@@ -96,10 +96,9 @@ roslaunch rosbot nav.launch
 
 The rosbot will drive toward the first marker position. Once reached, it will turn looking for the marker. Once the marker is found, the rosbot will move toward the next marker.  
 Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
+The following video shows the rosbot performing the assignment task.
 
 https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/assets/114524396/2fbfd35a-2d4d-4738-8d49-d9d0ccf3f70f
-
-The following video shows the robot's behaviour in the real world.
 
 ## Difference between simulation and real rosbot
 
@@ -109,6 +108,10 @@ The code used to accomplish the second assignment on the real rosbot differs fro
 - reduced move_base maximum and minimum speed. Due to the lag in the communication between ROS master and the remote laptop, to reduce the risk of unavoidable instabilities, the speed of the rosbot has been decreased,
 - the topic /camera/color/image_raw has been changed to /camera/rgb/image_raw,
 - the topic /camera/color/camera_info has been changed to /camera/rgb/camera_info
+
+## Design choice
+
+As for the base local planner, we chose to use the Trajectory Rollout (TR) algorithm instead of the Dynamic Window approach (DWA). As reported in the documentation ([base local planner](http://wiki.ros.org/base_local_planner)), the DWA is more efficient, since it considers a smaller space for predicting the trajectory, however, because of the rosbot performance and, most of all, the lag in communication, the TR algorithm has been preferred.
 
 ## Architecture
 
